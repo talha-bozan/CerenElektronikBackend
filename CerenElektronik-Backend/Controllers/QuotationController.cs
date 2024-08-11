@@ -1,7 +1,13 @@
 ﻿using CerenElektronik_Backend.Data;
 using CerenElektronik_Backend.Models;
 using CerenElektronik_Backend.Models.DTO;
+using CerenElektronik_Backend.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using SelectPdf;
 
 namespace CerenElektronik_Backend.Controllers
 {
@@ -9,11 +15,14 @@ namespace CerenElektronik_Backend.Controllers
     [ApiController]
     public class QuotationController : Controller
     {
+        protected readonly ICompositeViewEngine _compositeViewEngine;
+
         private readonly QuotationStore _quotationStore;
 
-        public QuotationController(QuotationStore quotationStore)
+        public QuotationController(QuotationStore quotationStore, ICompositeViewEngine compositeViewEngine)
         {
             _quotationStore = quotationStore;
+            _compositeViewEngine = compositeViewEngine;
         }
         [HttpGet]
         public async Task<IActionResult> GetQuotations()
@@ -110,5 +119,52 @@ namespace CerenElektronik_Backend.Controllers
 
             return NoContent();
         }
+        [HttpGet("invoice/{id}")]
+        public async Task<IActionResult> GenerateQuotationPdfAsync(int id)
+        {
+            var quotation = await _quotationStore.GetQuotationByIdAsync(id);
+            if (quotation == null)
+            {
+                return NotFound("Quotation not found.");
+            }
+
+            using (var stringWriter = new StringWriter())
+            {
+                var viewResult = _compositeViewEngine.FindView(ControllerContext, "_Quotation", false);
+
+                if (viewResult.View == null)
+                {
+                    return NotFound("The invoice view could not be found.");
+                }
+
+                // Pass the retrieved quotation data to the view
+                var viewDictionary = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+                {
+                    Model = quotation
+                };
+
+                var viewContext = new ViewContext(
+                    ControllerContext,
+                    viewResult.View,
+                    viewDictionary,
+                    TempData,
+                    stringWriter,
+                    new HtmlHelperOptions()
+                );
+
+                await viewResult.View.RenderAsync(viewContext);
+
+                var htmlToPdf = new HtmlToPdf(1000, 1414);
+                htmlToPdf.Options.DrawBackground = true;
+
+                var pdf = htmlToPdf.ConvertHtmlString(stringWriter.ToString());
+                var pdfBytes = pdf.Save();
+
+                return File(pdfBytes, "application/pdf", "Quotation.pdf");
+            }
+        }
+
+
+
     }
 }
