@@ -2,10 +2,10 @@
 {
     public enum QuotationStatus
     {
-        Lost,
-        PoReceivedOrApproved,
-        Sent,
-        Pending,
-        ToDo
+        ToDo = 0,
+        Sent = 1,
+        Pending = 2,
+        PoReceivedOrApproved = 3,
+        Lost = 4
     }
 }
