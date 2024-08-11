@@ -144,11 +144,24 @@ namespace CerenElektronik_Backend.Controllers
                 {
                     Model = quotation
                 };
-
                 // Add additional info directly to ViewDataDictionary
-                viewDictionary["AdditionalInfo1"] = request.AdditionalInfo1;
-                viewDictionary["AdditionalInfo2"] = request.AdditionalInfo2;
-                viewDictionary["AdditionalInfo3"] = request.AdditionalInfo3;
+                viewDictionary["CustomerName"] = request.CustomerName;
+                viewDictionary["CustomerPosition"] = request.CustomerPosition;
+                viewDictionary["CustomerCompany"] = request.CustomerCompany;
+                viewDictionary["CustomerEmail"] = request.CustomerEmail;
+                viewDictionary["Products"] = request.Products;
+                viewDictionary["ProjectName"] = request.ProjectName;
+                viewDictionary["ContactPersonOneName"] = request.ContactPersonOneName;
+                viewDictionary["ContactPersonOnePhoneNumber"] = request.ContactPersonOnePhoneNumber;
+                viewDictionary["ContactPersonOneEmail"] = request.ContactPersonOneEmail;
+                viewDictionary["ContactPersonTwoName"] = request.ContactPersonTwoName;
+                viewDictionary["ContactPersonTwoPhoneNumber"] = request.ContactPersonTwoPhoneNumber;
+                viewDictionary["ContactPersonTwoEmail"] = request.ContactPersonTwoEmail;
+                viewDictionary["ItemID"] = request.ItemID;
+                viewDictionary["ItemDescription"] = request.ItemDescription;
+                viewDictionary["UnitAmount"] = request.UnitAmount;
+                viewDictionary["UnitPrice"] = request.UnitPrice;
+                viewDictionary["UnitAmount*UnitPrice"] = request.UnitAmount * request.UnitPrice;
 
                 var viewContext = new ViewContext(
                     ControllerContext,
@@ -170,10 +183,5 @@ namespace CerenElektronik_Backend.Controllers
                 return File(pdfBytes, "application/pdf", "Quotation.pdf");
             }
         }
-
-
-
-
-
     }
 }
