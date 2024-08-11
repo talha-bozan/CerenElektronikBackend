@@ -119,10 +119,12 @@ namespace CerenElektronik_Backend.Controllers
 
             return NoContent();
         }
-        [HttpGet("invoice/{id}")]
-        public async Task<IActionResult> GenerateQuotationPdfAsync(int id)
+        [HttpPost("GenerateQuotationPdf")]
+        public async Task<IActionResult> GenerateQuotationPdfAsync([FromBody] QuotationPdfRequestDTO request)
         {
-            var quotation = await _quotationStore.GetQuotationByIdAsync(id);
+            if (!ModelState.IsValid || !request.QuotationId.HasValue ) { return BadRequest(ModelState); }
+
+            var quotation = await _quotationStore.GetQuotationByIdAsync(request.QuotationId.Value);
             if (quotation == null)
             {
                 return NotFound("Quotation not found.");
@@ -137,11 +139,16 @@ namespace CerenElektronik_Backend.Controllers
                     return NotFound("The invoice view could not be found.");
                 }
 
-                // Pass the retrieved quotation data to the view
+                // Pass the retrieved quotation data and additional info to the view
                 var viewDictionary = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
                 {
                     Model = quotation
                 };
+
+                // Add additional info directly to ViewDataDictionary
+                viewDictionary["AdditionalInfo1"] = request.AdditionalInfo1;
+                viewDictionary["AdditionalInfo2"] = request.AdditionalInfo2;
+                viewDictionary["AdditionalInfo3"] = request.AdditionalInfo3;
 
                 var viewContext = new ViewContext(
                     ControllerContext,
@@ -163,6 +170,8 @@ namespace CerenElektronik_Backend.Controllers
                 return File(pdfBytes, "application/pdf", "Quotation.pdf");
             }
         }
+
+
 
 
 
