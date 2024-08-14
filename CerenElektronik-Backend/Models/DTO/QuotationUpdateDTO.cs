@@ -1,15 +1,11 @@
 ﻿using CerenElektronik_Backend.Models.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
-namespace CerenElektronik_Backend.Models
+namespace CerenElektronik_Backend.Models.DTO
 {
-    public class Quotation
+    public class QuotationUpdateDTO
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public int Id { get; set; } 
         public string? TaskCustomID { get; set; }
         public string? TaskName { get; set; }
         public string? PerformerId { get; set; }
@@ -23,6 +19,7 @@ namespace CerenElektronik_Backend.Models
         public string? PreparedBy { get; set; }
         public string? Currency { get; set; }
         public float? QuotationAmount { get; set; }
+        [EmailAddress]
         public string? SentTo { get; set; }
         public string? QuotationFile { get; set; }
         public string? PoOrPrePaymentRecievedForProduction { get; set; }
@@ -31,6 +28,5 @@ namespace CerenElektronik_Backend.Models
         public bool? PassiveShieldingNeeded { get; set; }
         public string? CountryCode { get; set; }
         public string? RFID { get; set; }
-
     }
 }

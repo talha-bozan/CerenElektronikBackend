@@ -1,10 +1,15 @@
 using CerenElektronik_Backend.Data;
+using Microsoft.EntityFrameworkCore;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddDbContext<ApplicationDbContext>(option =>
+{
+    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
+});
 builder.Services.AddControllersWithViews();
 
 // Configure Swagger/OpenAPI
@@ -26,9 +31,6 @@ builder.Services.AddHttpsRedirection(options =>
     options.RedirectStatusCode = Status307TemporaryRedirect;
     options.HttpsPort = 5001;
 });
-
-// Register the QuotationStore service
-builder.Services.AddSingleton<QuotationStore>();
 
 var app = builder.Build();
 

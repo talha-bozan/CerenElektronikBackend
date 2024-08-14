@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.EntityFrameworkCore;
 using SelectPdf;
 
 namespace CerenElektronik_Backend.Controllers
@@ -15,39 +16,42 @@ namespace CerenElektronik_Backend.Controllers
     [ApiController]
     public class QuotationController : Controller
     {
-        protected readonly ICompositeViewEngine _compositeViewEngine;
+        private readonly ICompositeViewEngine _compositeViewEngine;
+        private readonly ApplicationDbContext _db;
 
-        private readonly QuotationStore _quotationStore;
-
-        public QuotationController(QuotationStore quotationStore, ICompositeViewEngine compositeViewEngine)
+        public QuotationController(ApplicationDbContext db, ICompositeViewEngine compositeViewEngine)
         {
-            _quotationStore = quotationStore;
+            _db = db;
             _compositeViewEngine = compositeViewEngine;
         }
+
         [HttpGet]
         public async Task<IActionResult> GetQuotations()
         {
-            var quotations = await _quotationStore.GetAllQuotationsAsync();
+            var quotations = await _db.Quotations.ToListAsync();
             return Ok(quotations);
         }
-        [HttpGet("{id}", Name ="GetQuotation")]
-        public async Task<IActionResult> GetQuatationById(int id)
+
+        [HttpGet("{id}", Name = "GetQuotation")]
+        public async Task<IActionResult> GetQuotationById(int id)
         {
-            var quotation = await _quotationStore.GetQuotationByIdAsync(id);
-            if (quotation == null) { return NotFound(); }
+            var quotation = await _db.Quotations.FindAsync(id);
+            if (quotation == null) return NotFound();
             return Ok(quotation);
         }
+
         [HttpPost]
-        public async Task<IActionResult> PostQuotation([FromBody] QuotationDTO quotationDTO)
+        public async Task<IActionResult> PostQuotation([FromBody] QuotationCreateDTO quotationDTO)
         {
-            if (!ModelState.IsValid) { return BadRequest(ModelState); }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var quotation = new Quotation
             {
                 TaskCustomID = quotationDTO.TaskCustomID,
                 TaskName = quotationDTO.TaskName,
                 PerformerId = quotationDTO.PerformerId,
                 Status = quotationDTO.Status,
-                DateCreated = quotationDTO.DateCreated,
+                DateCreated = quotationDTO.DateCreated ?? DateTime.Now,
                 RevisionStatus = quotationDTO.RevisionStatus,
                 RegionName = quotationDTO.RegionName,
                 DeviceName = quotationDTO.DeviceName,
@@ -65,25 +69,25 @@ namespace CerenElektronik_Backend.Controllers
                 CountryCode = quotationDTO.CountryCode,
                 RFID = quotationDTO.RFID
             };
-            var createdQuotation = await _quotationStore.CreateQuotationAsync(quotation);
-            return CreatedAtRoute("GetQuotation",new {Id = createdQuotation.Id}, createdQuotation);
+
+            _db.Quotations.Add(quotation);
+            await _db.SaveChangesAsync();
+
+            return CreatedAtRoute("GetQuotation", new { Id = quotation.Id }, quotation);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutQuotation(int id, QuotationDTO quotationDTO) 
+        public async Task<IActionResult> PutQuotation(int id, [FromBody] QuotationUpdateDTO quotationDTO)
         {
-            if (id == 0) { return BadRequest(); }
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var existingQuotation = await _quotationStore.GetQuotationByIdAsync(id);
+            if (id == 0) return BadRequest();
+
+            var existingQuotation = await _db.Quotations.FindAsync(id);
+            if (existingQuotation == null) return NotFound();
 
             existingQuotation.TaskCustomID = quotationDTO.TaskCustomID;
             existingQuotation.TaskName = quotationDTO.TaskName;
             existingQuotation.PerformerId = quotationDTO.PerformerId;
             existingQuotation.Status = quotationDTO.Status;
-            existingQuotation.DateCreated = quotationDTO.DateCreated;
             existingQuotation.RevisionStatus = quotationDTO.RevisionStatus;
             existingQuotation.RegionName = quotationDTO.RegionName;
             existingQuotation.DeviceName = quotationDTO.DeviceName;
@@ -101,50 +105,42 @@ namespace CerenElektronik_Backend.Controllers
             existingQuotation.CountryCode = quotationDTO.CountryCode;
             existingQuotation.RFID = quotationDTO.RFID;
 
-            var UpdatedQuotation = _quotationStore.UpdateQuotationAsync(existingQuotation);
+            _db.Quotations.Update(existingQuotation);
+            await _db.SaveChangesAsync();
 
-            if (UpdatedQuotation == null) { return NotFound(); }
-            
-            return Ok(UpdatedQuotation);
-
+            return Ok(existingQuotation);
         }
-         [HttpDelete("{id}")]
+
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteQuotation(int id)
         {
-            var success = await _quotationStore.DeleteQuotationAsync(id);
-            if (!success)
-            {
-                return NotFound();
-            }
+            var quotation = await _db.Quotations.FindAsync(id);
+            if (quotation == null) return NotFound();
+
+            _db.Quotations.Remove(quotation);
+            await _db.SaveChangesAsync();
 
             return NoContent();
         }
+
         [HttpPost("GenerateQuotationPdf")]
         public async Task<IActionResult> GenerateQuotationPdfAsync([FromBody] QuotationPdfRequestDTO request)
         {
-            if (!ModelState.IsValid || !request.QuotationId.HasValue ) { return BadRequest(ModelState); }
+            if (!ModelState.IsValid || !request.QuotationId.HasValue) return BadRequest(ModelState);
 
-            var quotation = await _quotationStore.GetQuotationByIdAsync(request.QuotationId.Value);
-            if (quotation == null)
-            {
-                return NotFound("Quotation not found.");
-            }
+            var quotation = await _db.Quotations.FindAsync(request.QuotationId.Value);
+            if (quotation == null) return NotFound("Quotation not found.");
 
             using (var stringWriter = new StringWriter())
             {
                 var viewResult = _compositeViewEngine.FindView(ControllerContext, "_Quotation", false);
+                if (viewResult.View == null) return NotFound("The invoice view could not be found.");
 
-                if (viewResult.View == null)
-                {
-                    return NotFound("The invoice view could not be found.");
-                }
-
-                // Pass the retrieved quotation data and additional info to the view
                 var viewDictionary = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
                 {
                     Model = quotation
                 };
-                // Add additional info directly to ViewDataDictionary
+
                 viewDictionary["CustomerName"] = request.CustomerName;
                 viewDictionary["CustomerPosition"] = request.CustomerPosition;
                 viewDictionary["CustomerCompany"] = request.CustomerCompany;
@@ -174,8 +170,10 @@ namespace CerenElektronik_Backend.Controllers
 
                 await viewResult.View.RenderAsync(viewContext);
 
-                var htmlToPdf = new HtmlToPdf(1000, 1414);
-                htmlToPdf.Options.DrawBackground = true;
+                var htmlToPdf = new HtmlToPdf(1000, 1414)
+                {
+                    Options = { DrawBackground = true }
+                };
 
                 var pdf = htmlToPdf.ConvertHtmlString(stringWriter.ToString());
                 var pdfBytes = pdf.Save();
