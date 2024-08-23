@@ -4,6 +4,7 @@ using CerenElektronik_Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CerenElektronik_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240823075752_AddPerformersTable")]
+    partial class AddPerformersTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,89 +33,41 @@ namespace CerenElektronik_Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ActionRequired")
+                    b.Property<string>("Currency")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Assignee")
+                    b.Property<string>("CustomerName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("CompletedDate")
+                    b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("CountryCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Customer")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DeviceName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Explanation")
+                    b.Property<string>("PerformerId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FourthInstaller")
+                    b.Property<string>("PreparedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Iatd1")
+                    b.Property<float?>("QuotationAmount")
+                        .HasColumnType("real");
+
+                    b.Property<string>("RFID")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("InvoiceId")
+                    b.Property<string>("RegionName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool?>("Invoiced")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LeadInstaller")
+                    b.Property<string>("RequestedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Location")
+                    b.Property<string>("TaskCustomID")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Pictures")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProgressDailyReport")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProjectManager")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("QuotationNo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Region")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RfTestHandOverD")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SafetyDocuments")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SecondInstaller")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("Status")
-                        .HasColumnType("int");
 
                     b.Property<string>("TaskName")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ThirdInstaller")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("TimeLogged")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("TimeLoggedRolledUp")
-                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
@@ -201,7 +156,7 @@ namespace CerenElektronik_Backend.Migrations
                             CountryCode = "US",
                             Currency = "USD",
                             CustomerName = "CustomerA",
-                            DateCreated = new DateTime(2024, 8, 23, 11, 19, 44, 530, DateTimeKind.Local).AddTicks(657),
+                            DateCreated = new DateTime(2024, 8, 23, 10, 57, 51, 373, DateTimeKind.Local).AddTicks(7576),
                             DeviceName = "DeviceA",
                             Invoiced = false,
                             PassiveShieldingNeeded = true,
@@ -226,7 +181,7 @@ namespace CerenElektronik_Backend.Migrations
                             CountryCode = "FR",
                             Currency = "EUR",
                             CustomerName = "CustomerB",
-                            DateCreated = new DateTime(2024, 8, 23, 11, 19, 44, 531, DateTimeKind.Local).AddTicks(2469),
+                            DateCreated = new DateTime(2024, 8, 23, 10, 57, 51, 375, DateTimeKind.Local).AddTicks(185),
                             DeviceName = "DeviceB",
                             Invoiced = true,
                             PassiveShieldingNeeded = false,
@@ -251,7 +206,7 @@ namespace CerenElektronik_Backend.Migrations
                             CountryCode = "UK",
                             Currency = "GBP",
                             CustomerName = "CustomerC",
-                            DateCreated = new DateTime(2024, 8, 23, 11, 19, 44, 531, DateTimeKind.Local).AddTicks(2486),
+                            DateCreated = new DateTime(2024, 8, 23, 10, 57, 51, 375, DateTimeKind.Local).AddTicks(233),
                             DeviceName = "DeviceC",
                             Invoiced = true,
                             PassiveShieldingNeeded = true,
@@ -276,7 +231,7 @@ namespace CerenElektronik_Backend.Migrations
                             CountryCode = "JP",
                             Currency = "JPY",
                             CustomerName = "CustomerD",
-                            DateCreated = new DateTime(2024, 8, 23, 11, 19, 44, 531, DateTimeKind.Local).AddTicks(2490),
+                            DateCreated = new DateTime(2024, 8, 23, 10, 57, 51, 375, DateTimeKind.Local).AddTicks(238),
                             DeviceName = "DeviceD",
                             Invoiced = false,
                             PassiveShieldingNeeded = false,
@@ -301,7 +256,7 @@ namespace CerenElektronik_Backend.Migrations
                             CountryCode = "AU",
                             Currency = "AUD",
                             CustomerName = "CustomerE",
-                            DateCreated = new DateTime(2024, 8, 23, 11, 19, 44, 531, DateTimeKind.Local).AddTicks(2494),
+                            DateCreated = new DateTime(2024, 8, 23, 10, 57, 51, 375, DateTimeKind.Local).AddTicks(242),
                             DeviceName = "DeviceE",
                             Invoiced = true,
                             PassiveShieldingNeeded = true,
@@ -326,7 +281,7 @@ namespace CerenElektronik_Backend.Migrations
                             CountryCode = "CA",
                             Currency = "CAD",
                             CustomerName = "CustomerF",
-                            DateCreated = new DateTime(2024, 8, 23, 11, 19, 44, 531, DateTimeKind.Local).AddTicks(2498),
+                            DateCreated = new DateTime(2024, 8, 23, 10, 57, 51, 375, DateTimeKind.Local).AddTicks(245),
                             DeviceName = "DeviceF",
                             Invoiced = false,
                             PassiveShieldingNeeded = false,
@@ -351,7 +306,7 @@ namespace CerenElektronik_Backend.Migrations
                             CountryCode = "US",
                             Currency = "USD",
                             CustomerName = "CustomerG",
-                            DateCreated = new DateTime(2024, 8, 23, 11, 19, 44, 531, DateTimeKind.Local).AddTicks(2501),
+                            DateCreated = new DateTime(2024, 8, 23, 10, 57, 51, 375, DateTimeKind.Local).AddTicks(249),
                             DeviceName = "DeviceG",
                             Invoiced = true,
                             PassiveShieldingNeeded = true,

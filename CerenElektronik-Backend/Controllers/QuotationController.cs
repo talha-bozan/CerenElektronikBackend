@@ -84,6 +84,23 @@ namespace CerenElektronik_Backend.Controllers
             var existingQuotation = await _db.Quotations.FindAsync(id);
             if (existingQuotation == null) return NotFound();
 
+            // Validate that all required fields are populated
+            if (string.IsNullOrEmpty(quotationDTO.TaskCustomID) ||
+                string.IsNullOrEmpty(quotationDTO.TaskName) ||
+                string.IsNullOrEmpty(quotationDTO.PerformerId) ||
+                string.IsNullOrEmpty(quotationDTO.RegionName) ||
+                string.IsNullOrEmpty(quotationDTO.DeviceName) ||
+                string.IsNullOrEmpty(quotationDTO.CustomerName) ||
+                string.IsNullOrEmpty(quotationDTO.RequestedBy) ||
+                string.IsNullOrEmpty(quotationDTO.PreparedBy) ||
+                quotationDTO.QuotationAmount == null ||
+                string.IsNullOrEmpty(quotationDTO.Currency) ||
+                string.IsNullOrEmpty(quotationDTO.RFID))
+            {
+                return BadRequest("All required fields must be filled before updating the status to PoReceivedOrApproved.");
+            }
+
+            // Update the existing quotation fields
             existingQuotation.TaskCustomID = quotationDTO.TaskCustomID;
             existingQuotation.TaskName = quotationDTO.TaskName;
             existingQuotation.PerformerId = quotationDTO.PerformerId;
@@ -105,23 +122,51 @@ namespace CerenElektronik_Backend.Controllers
             existingQuotation.CountryCode = quotationDTO.CountryCode;
             existingQuotation.RFID = quotationDTO.RFID;
 
+            // Check if the status is PoReceivedOrApproved and move to Performer table
+            if (quotationDTO.Status == QuotationStatus.PoReceivedOrApproved)
+            {
+                var performer = new Performer
+                {
+                    TaskName = quotationDTO.TaskName,
+                    QuotationNo = quotationDTO.TaskCustomID,
+                    InvoiceId = null, 
+                    Customer = quotationDTO.CustomerName,
+                    Assignee = quotationDTO.PerformerId,
+                    Region = quotationDTO.RegionName,
+                    Location = null, 
+                    DueDate = null, 
+                    Status = PerformersStatus.ToDo,
+                    Invoiced = quotationDTO.Invoiced,
+                    StartDate = DateTime.Now, 
+                    TimeLogged = 0,
+                    TimeLoggedRolledUp = 0, 
+                    LeadInstaller = null, 
+                    SecondInstaller = null, 
+                    ThirdInstaller = null,
+                    FourthInstaller = null,
+                    DeviceName = quotationDTO.DeviceName,
+                    CompletedDate = null,
+                    ProjectManager = null, 
+                    ProgressDailyReport = null, 
+                    SafetyDocuments = null, 
+                    Iatd1 = null, 
+                    Pictures = null,
+                    RfTestHandOverD = null, 
+                    ActionRequired = null, 
+                    Explanation = null,
+                    CountryCode = quotationDTO.CountryCode,
+                };
+
+                _db.Performers.Add(performer);
+            }
+
+
             _db.Quotations.Update(existingQuotation);
             await _db.SaveChangesAsync();
 
             return Ok(existingQuotation);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteQuotation(int id)
-        {
-            var quotation = await _db.Quotations.FindAsync(id);
-            if (quotation == null) return NotFound();
-
-            _db.Quotations.Remove(quotation);
-            await _db.SaveChangesAsync();
-
-            return NoContent();
-        }
 
         [HttpPost("GenerateQuotationPdf")]
         public async Task<IActionResult> GenerateQuotationPdfAsync([FromBody] QuotationPdfRequestDTO request)

@@ -11,11 +11,14 @@ namespace CerenElektronik_Backend.Data
         {
         }
         public DbSet<Quotation> Quotations { get; set; }
+        public DbSet<Performer> Performers { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Quotation>().HasData(
-                 new Quotation
+            modelBuilder.Entity<Quotation>().HasData
+            (
+            new Quotation
                  {
                      Id = 1,
                      TaskCustomID = "T001",
@@ -190,7 +193,7 @@ namespace CerenElektronik_Backend.Data
                 CountryCode = "US",
                 RFID = "RFID007"
             }
-                );
+            );
         }
     }
 }
